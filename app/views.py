@@ -1,12 +1,45 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from .models import *
 from .serializer import *
 import json
 # aba para criação de metodos = ao controler do projeto
 
-class LivroView(APIView):
+
+#Modo automático - O ModelViewSet possui todos os metodos de crud
+class LivroModelView(ModelViewSet):
+    # tipo de querr para pegar tudo 
+    queryset = Livros.objects.all()
+    serializer_class = LivroSerializer
+    # http_method_names = ('POST', 'GET')
+
+class GeneroModelView(ModelViewSet):
+    queryset = Genero.objects.all()
+    serializer_class = GeneroSerializer
+    # http_method_names = ('POST', 'GET')
+
+class GeneroLivroModelView(ModelViewSet):
+    queryset = GeneroLivro.objects.all()
+    serializer_class = GeneroLivroSerializer
+    # http_method_names = ('POST', 'GET')
+
+    def list (self, request, *args, **kwargs):
+        # generoLivro = GeneroLivro.objects.select_related('fk_livro', 'fk_genero')
+        generoLivro = GeneroLivro.objects.all()
+        print(generoLivro.query)
+        serializer = GetGeneroLivroSerializer(generoLivro, many=True)
+        return Response(status=201, data=serializer.data)
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = GetGeneroLivroSerializer(instance, many=False)
+        return Response(serializer.data)
+
+
+# Modo manual
+class LivroAPIView(APIView):
     #funções para chamar as classes, o request é do que ele está requisitando
     def get(self, request, id=''):
 
